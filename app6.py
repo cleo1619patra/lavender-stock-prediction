@@ -17,7 +17,7 @@ def extract_columns(data, columns):
     return [{col: record[col] for col in columns} for record in data]
 @app.route('/')
 def index():
-    return render_template('index6.html')
+    return render_template('index7.html')
 
 @app.route('/predict')
 def predict():
