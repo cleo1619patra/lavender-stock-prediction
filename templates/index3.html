@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Price Predictor</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .top-banner {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 0;
+            text-align: center;
+        }
+        .content {
+            margin-top: 20px;
+        }
+        .table-container, .chart-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="top-banner">
+    <h1>Stock Price Predictor</h1>
+</div>
+
+<div class="container content">
+    <div class="row">
+        <div class="col-md-6 offset-md-3">
+            <form id="stockForm">
+                <div class="form-group">
+                    <label for="stockSelect">Select a Company Stock:</label>
+                    <select class="form-control" id="stockSelect">
+                        <option value="AAPL">Apple</option>
+                        <option value="GOOGL">Google</option>
+                        <option value="AMZN">Amazon</option>
+                        <option value="MSFT">Microsoft</option>
+                    </select>
+                </div>
+                <button type="button" class="btn btn-primary" onclick="predictPrices()">Predict</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="row table-container" id="predictionTableContainer" style="display: none;">
+        <div class="col-md-12">
+            <h3>Predicted Closing Prices</h3>
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>Date</th>
+                        <th>Predicted Price</th>
+                    </tr>
+                </thead>
+                <tbody id="predictionTableBody">
+                    <!-- Predicted prices will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="row chart-container" id="chartContainer" style="display: none;">
+        <div class="col-md-12">
+            <h3>Price Prediction Graph</h3>
+            <canvas id="priceChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script>
+    function predictPrices() {
+        const stock = document.getElementById('stockSelect').value;
+
+        fetch(`/predict?stock=${stock}`)
+            .then(response => response.json())
+            .then(data => {
+                const tableBody = document.getElementById('predictionTableBody');
+                tableBody.innerHTML = '';
+                data.forEach(item => {
+                    const row = `<tr><td>${item.Date}</td><td>${item.Close}</td></tr>`;
+                    tableBody.insertAdjacentHTML('beforeend', row);
+                });
+
+                document.getElementById('predictionTableContainer').style.display = 'block';
+
+                const labels = data.map(item => item.Date);
+                const prices = data.map(item => item.Close);
+
+                const ctx = document.getElementById('priceChart').getContext('2d');
+                new Chart(ctx, {
+                    type: 'line',
+                    data: {
+                        labels: labels,
+                        datasets: [{
+                            label: 'Predicted Price',
+                            data: prices,
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1,
+                            fill: false
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        scales: {
+                            x: {
+                                type: 'category',
+                                labels: labels
+                            },
+                            y: {
+                                beginAtZero: true
+                            }
+                        }
+                    }
+                });
+
+                document.getElementById('chartContainer').style.display = 'block';
+            });
+    }
+</script>
+
+</body>
+</html>
